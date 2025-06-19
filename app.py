@@ -1,6 +1,5 @@
 import streamlit as st
 
-from config import NORMALIZATION_RANGES
 from input_utils import get_user_inputs
 from model_loader import download_model_from_azure
 from prediction import prepare_input_data, make_prediction
@@ -17,7 +16,7 @@ st.header("Price Prediction")
 if st.button("Predict Price"):
     if model is not None:
         try:
-            input_df = prepare_input_data(inputs, NORMALIZATION_RANGES)
+            input_df = prepare_input_data(inputs)
 
             with st.expander("Debug: See Model Input"):
                 st.dataframe(input_df)

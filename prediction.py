@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from feature_utils import normalize_feature
@@ -13,38 +14,35 @@ MODEL_COLUMNS = [
 ]
 
 
-def prepare_input_data(inputs, normalization_ranges):
-    """
-    Przygotowuje dane wejściowe do predykcji, normalizując cechy i dodając cechy pochodne.
+def prepare_input_data(inputs: dict) -> pd.DataFrame:
+    input_df = pd.DataFrame([inputs])
 
-    Args:
-        inputs (dict): Słownik z danymi wejściowymi.
-        normalization_ranges (dict): Słownik z zakresami normalizacji.
+    input_df['year'] = pd.to_numeric(input_df['year'], errors='coerce')
+    input_df['buildYear'] = pd.to_numeric(input_df['buildYear'], errors='coerce')
+    input_df['floor'] = pd.to_numeric(input_df['floor'], errors='coerce')
+    input_df['floorCount'] = pd.to_numeric(input_df['floorCount'], errors='coerce')
 
-    Returns:
-        pd.DataFrame: DataFrame z danymi gotowymi do predykcji.
-    """
-    age = inputs['year'] - inputs['buildYear']
-    floor_ratio = inputs['floor'] / inputs['floorCount'] if inputs['floorCount'] > 0 else 0
+    input_df['age'] = input_df['year'] - input_df['buildYear']
+    input_df.loc[(input_df['age'] < 0) | (input_df['age'] > 200), 'age'] = np.nan
+    input_df['age'] = input_df['age'].fillna(30)  # Using a reasonable default for imputation
 
-    features_to_normalize = [
-        'squareMeters', 'rooms', 'centreDistance', 'poiCount', 'schoolDistance',
-        'clinicDistance', 'postOfficeDistance', 'kindergartenDistance',
-        'restaurantDistance', 'collegeDistance', 'pharmacyDistance', 'age'
+    input_df['floor_ratio'] = (input_df['floor'] / input_df['floorCount']).replace([np.inf, -np.inf], np.nan).fillna(0)
+
+    columns_to_exclude = [
+        'buildYear', 'price', 'year', 'month', 'latitude', 'longitude',
+        'floor', 'floorCount', 'floor_ratio'
     ]
+    numeric_cols = input_df.select_dtypes(include=np.number).columns.tolist()
+    columns_to_normalize = [col for col in numeric_cols if col not in columns_to_exclude]
 
-    feature_data = {}
-    for key, value in inputs.items():
-        if key in features_to_normalize:
-            feature_data[key] = normalize_feature(value, key)
-        else:
-            feature_data[key] = float(value) if key in ['floor', 'floorCount', 'buildYear', 'month', 'year'] else value
+    for col in columns_to_normalize:
+        input_df[col] = normalize_feature(input_df[col].iloc[0], col)
 
-    feature_data['age'] = normalize_feature(age, 'age')
-    feature_data['floor_ratio'] = floor_ratio
+    for col in MODEL_COLUMNS:
+        if col not in input_df.columns:
+            input_df[col] = 0
 
-    input_df = pd.DataFrame([feature_data], columns=MODEL_COLUMNS)
-    return input_df
+    return input_df[MODEL_COLUMNS]
 
 
 def make_prediction(model, input_df):
@@ -59,4 +57,4 @@ def make_prediction(model, input_df):
         float: Przewidywana cena mieszkania.
     """
     prediction = model.predict(input_df)
-    return prediction[0]
+    return prediction.iloc[0]
