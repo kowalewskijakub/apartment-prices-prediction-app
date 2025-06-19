@@ -17,7 +17,7 @@ A Streamlit web application that predicts apartment prices based on various feat
    ```
 
 2. Configure Azure Storage credentials:
-   - Create a `.streamlit/secrets.toml` file with your Azure Storage credentials:
+    - Create a `.streamlit/secrets.toml` file with your Azure Storage credentials:
    ```toml
    AZURE_STORAGE_CONNECTION_STRING = "Your Azure Storage connection string"
    AZURE_CONTAINER_NAME = "your_container_name"
@@ -30,11 +30,13 @@ A Streamlit web application that predicts apartment prices based on various feat
 
 ## Required Model
 
-The app expects a trained model named `predictor.pkl` in your Azure Storage container. The model should be capable of predicting apartment prices based on the features listed in the application.
+The app expects a trained model named `predictor.pkl` in your Azure Storage container. The model should be capable of
+predicting apartment prices based on the features listed in the application.
 
 ## Dataset Features
 
 The model should be trained on data with the following features:
+
 - City (e.g., Krakow, Warsaw)
 - Apartment type (e.g., apartmentBuilding, tenement)
 - Square meters
