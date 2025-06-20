@@ -40,7 +40,7 @@ def download_model_from_azure():
             with open(local_path, "wb") as file:
                 file.write(blob_client.download_blob().readall())
 
-        model = TabularPredictor.load(model_dir, require_version_match=False)
+        model = TabularPredictor.load(model_dir, require_py_version_match=False, require_version_match=False)
         st.success("Model successfully loaded from Azure Storage!")
         return model
     except Exception as e:

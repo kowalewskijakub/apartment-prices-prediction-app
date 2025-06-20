@@ -16,6 +16,7 @@ st.header("Price Prediction")
 if st.button("Predict Price"):
     if model is not None:
         try:
+
             input_df = prepare_input_data(inputs)
 
             with st.expander("Debug: See Model Input"):
